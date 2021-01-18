@@ -28,6 +28,7 @@ class AutomationWhatsApp():
         path_install = chromedriver_autoinstaller.install()
         options = webdriver.ChromeOptions()
         # options.add_argument('--headless')
+        options.add_argument("user-data-dir=./data/")
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-gpu')
         options.add_argument('--ignore-certificate-errors')
@@ -35,11 +36,9 @@ class AutomationWhatsApp():
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--disable-extensions')
         options.add_argument('--start-maximized')
-        options.add_argument('lang=pt-br')
         options.add_argument('--disable-software-rasterizer')
         options.add_argument('disable-infobars')
-
-
+        options.add_argument('lang=pt-br')
         return webdriver.Chrome(
             chrome_options=options,
             executable_path=path_install
@@ -47,17 +46,23 @@ class AutomationWhatsApp():
 
 
     def send(self):
-
+        driver = self.config()
         driver.execute_script(
             "navigator.__defineGetter__('userAgent', function () {return 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.80 Safari/537.36'});")
         driver.execute_script("return navigator.userAgent;")
-        time.sleep(5)
+        try:
+            driver.get(f'https://web.whatsapp.com/send?phone={self.numbers}')
+            time.sleep(5)
+        except IndexError:
+            print('Tentando novamente:', err)
+            time.sleep(3)
+        except Exception as err:
+            print(err)
+            pass
 
-        driver.get(f'https://web.whatsapp.com/send?phone={self.number_person}')
-        driver.save_screenshot(f'{time.time()}.png')
         chat_box = driver.find_elements_by_xpath(
             '//*[@id="main"]/footer/div[1]/div[2]/div/div[2]')
-        chat_box[0].send_keys(self.request_person)
+        chat_box[0].send_keys(self.content)
         botao_enviar = driver.find_element_by_xpath(
             "//span[@data-icon='send']")
         botao_enviar.click()
