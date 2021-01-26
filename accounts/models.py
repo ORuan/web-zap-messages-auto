@@ -14,5 +14,6 @@ class Account(models.Model):
     created_at = models.DateTimeField(auto_created=timezone.now(), editable=False)
     edited_at = models.DateTimeField(auto_now=timezone.now())
     tokens_id = models.ForeignKey(Tokens, on_delete=models.CASCADE)
-
-
+    #mudar esse workspace
+    has_workspace = models.BooleanField(default=False)
+    path_workspace = models.CharField(max_length=255, null=True)

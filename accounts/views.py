@@ -1,15 +1,19 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from accounts.forms import UserForm
 from seln.utils import AutomationWhatsApp
+from django.contrib.auth.models import User
+import threading
+
 
 
 def register_users(request):
-    send = AutomationWhatsApp('teste-teste', '5577998714634')
-    send.send()
     if request.method == "POST":
         form_data = UserForm(request.POST)
         if form_data.is_valid():
             form_data.save()
+            #Create a new bot for him
+            threading.Thread(target=AutomationWhatsApp('teste-teste', ['5577998714634']).send, args=(3,) ,daemon=True).start()
+            #Page for user informations
             return redirect('painel')
         else:
             form_data = UserForm(request.POST)
