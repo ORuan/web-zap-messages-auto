@@ -3,18 +3,21 @@ from accounts.forms import UserForm
 from seln.utils import AutomationWhatsApp
 from django.contrib.auth.models import User
 import threading
+from django.contrib.auth.decorators import login_required
 
 
-
+@login_required
 def register_users(request):
     if request.method == "POST":
         form_data = UserForm(request.POST)
         if form_data.is_valid():
             form_data.save()
             #Create a new bot for him
-            threading.Thread(target=AutomationWhatsApp('teste-teste', ['5577998714634']).send, args=(3,) ,daemon=True).start()
+            threading.Thread(target=AutomationWhatsApp(content='teste-teste', numbers=['5577998714634']).send, args=(request.user.id,), daemon=True).start()
+            id_thread = threading.get_ident()
+            print("ID - THREAD", id_thread)
             #Page for user informations
-            return redirect('painel')
+            return redirect('seln:panel')
         else:
             form_data = UserForm(request.POST)
             return render(request, 'forms/form.html', {'form':form_data})

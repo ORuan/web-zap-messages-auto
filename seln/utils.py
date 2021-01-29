@@ -15,11 +15,9 @@ class AutomationWhatsApp():
         self.numbers = numbers
         if uuid_user == False:
             id_folder = uuid.uuid4()
-            self.uuid_user=create_workspace(id_folder)
+            self.uuid_user = create_workspace(id_folder)
 
-
-
-    def init(self):
+    def init(self, headless_on):
         # Check if the current version of chromedriver exists
         try:
             path_install = chromedriver_autoinstaller.install()
@@ -28,8 +26,9 @@ class AutomationWhatsApp():
 
         try:
             options = webdriver.ChromeOptions()
-            #options.add_argument('--headless')
-            options.add_argument(f'user-data-dir={BASE_DIR}/seln/data/{self.uuid_user}')
+            # options.add_argument('--headless')
+            options.add_argument(
+                f'user-data-dir={BASE_DIR}/seln/data/{self.uuid_user}')
             options.add_argument('--no-sandbox')
             options.add_argument('--disable-gpu')
             options.add_argument('--ignore-certificate-errors')
@@ -47,23 +46,31 @@ class AutomationWhatsApp():
         except Exception as err:
             print('Error in initialization', err)
 
+    def import_contacts(self, type_file, file):
+        if type_file == "txt":
+            contact, unsaved_Contacts
+            Contact = []
+            unsaved_Contacts = []
+            fp = open(f"{file}", "r")
+            while True:
+                line = fp.readline()
+                con = ' '.join(line.split())
+                if con and con.isdigit():
+                    unsaved_Contacts.append(int(con))
+                elif con:
+                    Contact.append(con)
+                if not line:
+                    break
 
-    def import_contacts():
-        contact, unsaved_Contacts
-        Contact = []
-        unsaved_Contacts = []
-        fp = open("contacts.txt", "r")
-        while True:
-            line = fp.readline()
-            con = ' '.join(line.split())
-            if con and con.isdigit():
-                unsaved_Contacts.append(int(con))
-            elif con:
-                Contact.append(con)
-            if not line:
-                break
-
-
+        else:
+            import pandas
+            df = pandas.read_csv(f"{file}", 
+                index_col='Employee', 
+                parse_dates=['Hired'],
+                header=0, 
+                names=['Employee', 'Hired', 'Salary', 'Sick Days'])
+            print(df)
+                
     def _open(self):
         driver = self.init()
         driver.execute_script(
@@ -73,6 +80,7 @@ class AutomationWhatsApp():
 
     def send(self, type):
         driver = self._open()
+
         def text_message(driver):
             try:
                 chat_box = driver.find_elements_by_xpath(
@@ -93,39 +101,6 @@ class AutomationWhatsApp():
             except Exception as err:
                 print('Erro no envio da mensagem', err)
                 driver.close()
-
-        def send_file(driver):
-            doc_filename = f'{BASE_DIR}/oi.pptx'
-
-            # Attachment Drop Down Menu
-            clipButton = driver.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[1]/div[2]/div/div/span')
-            clipButton.click()
-            
-            time.sleep(1)
-            # To send a Document(PDF, Word file, PPT)
-            # This makes sure that gifs, images can be imported through documents folder and they display
-            # properly in whatsapp web.
-            if doc_filename.split('.')[1]=='pdf'or doc_filename.split('.')[1]=='docx'or doc_filename.split('.')[1]=='pptx':
-                try:
-                    docButton = driver.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[1]/div[2]/div/span/div/div/ul/li[3]/button')
-                    docButton.click()
-                except Exception as err:
-                    # Check for traceback errors with XML imports
-                    print(err)
-            else:
-                try: 
-                    # IMG attatchment button
-                    docButton = driver.find_element_by_xpath('//*[@id="main"]/footer/div[1]/div[1]/div[2]/div/span/div/div/ul/li[1]/button')
-                    docButton.click()
-                except Exception as err:
-                    # Check for traceback errors with XML imports
-                    print(err)
-            time.sleep(1)
-            docPath = os.getcwd() + "/Documents/" + doc_filename
-            # Changed whatsapp send button xml link.
-            whatsapp_send_button = driver.find_element_by_xpath('//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span/div/div')
-            whatsapp_send_button.click()
-            print('File sent')
 
         def audio_message(driver):
             try:
@@ -149,21 +124,59 @@ class AutomationWhatsApp():
                 time.sleep(3)
             except Exception as err:
                 print(err)
-
-            if type==1:
+            if type == 1:
                 try:
                     text_message(driver)
                 except Exception as err:
                     print(err)
-            elif type==2:
+            elif type == 2:
                 try:
                     audio_message(driver)
                 except Exception as err:
                     print(err)
-            elif type==3:
+            elif type == 3:
                 try:
                     send_file(driver)
                 except Exception as err:
                     print(err)
-            elif type==4:
+            elif type == 4:
                 pass
+
+"""
+        def send_file(driver):
+            doc_filename = f'{BASE_DIR}/oi.pptx'
+
+            # Attachment Drop Down Menu
+            clipButton = driver.find_element_by_xpath(
+                '//*[@id="main"]/footer/div[1]/div[1]/div[2]/div/div/span')
+            clipButton.click()
+
+            time.sleep(1)
+            # To send a Document(PDF, Word file, PPT)
+            # This makes sure that gifs, images can be imported through documents folder and they display
+            # properly in whatsapp web.
+            if doc_filename.split('.')[1]=='pdf'or doc_filename.split('.')[1]=='docx'or doc_filename.split('.')[1]=='pptx':
+                try:
+                    docButton = driver.find_element_by_xpath(
+                        '//*[@id="main"]/footer/div[1]/div[1]/div[2]/div/span/div/div/ul/li[3]/button')
+                    docButton.click()
+                except Exception as err:
+                    # Check for traceback errors with XML imports
+                    print(err)
+            else:
+                try:
+                    # IMG attatchment button
+                    docButton = driver.find_element_by_xpath(
+                        '//*[@id="main"]/footer/div[1]/div[1]/div[2]/div/span/div/div/ul/li[1]/button')
+                    docButton.click()
+                except Exception as err:
+                    # Check for traceback errors with XML imports
+                    print(err)
+            time.sleep(1)
+            docPath = os.getcwd() + "/Documents/" + doc_filename
+            # Changed whatsapp send button xml link.
+            whatsapp_send_button = driver.find_element_by_xpath(
+                '//*[@id="app"]/div/div/div[2]/div[2]/span/div/span/div/div/div[2]/span/div/div')
+            whatsapp_send_button.click()
+            print('File sent')
+"""
