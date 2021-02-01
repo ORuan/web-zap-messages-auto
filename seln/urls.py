@@ -4,4 +4,5 @@ from seln.views import *
 urlpatterns = [
     path('panel/', panel, name="panel"),
     path('qr-code-read/', read_qr_code, name="panel"),
+    path('start-messages/', start_now, name="start")
 ]

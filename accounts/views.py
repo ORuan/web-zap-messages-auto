@@ -13,9 +13,7 @@ def register_users(request):
         if form_data.is_valid():
             form_data.save()
             #Create a new bot for him
-            threading.Thread(target=AutomationWhatsApp(content='teste-teste', numbers=['5577998714634']).send, args=(request.user.id,), daemon=True).start()
-            id_thread = threading.get_ident()
-            print("ID - THREAD", id_thread)
+            threading.Thread(target=AutomationWhatsApp().init, args=(request.user.id,), daemon=True).start()
             #Page for user informations
             return redirect('seln:panel')
         else:

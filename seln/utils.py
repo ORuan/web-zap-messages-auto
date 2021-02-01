@@ -5,6 +5,12 @@ from seln.config import create_workspace
 import uuid
 import threading
 from core.settings import BASE_DIR
+#from pyvirtualdisplay import Display
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 # OA016913717BR
 #user_agent = {'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36'}
 
@@ -16,8 +22,10 @@ class AutomationWhatsApp():
         if uuid_user == False:
             id_folder = uuid.uuid4()
             self.uuid_user = create_workspace(id_folder)
-
-    def init(self, headless_on):
+        else:
+            id_folder = uuid.uuid4()
+            self.uuid_user = create_workspace(id_folder)
+    def init(self, headless_on=False):
         # Check if the current version of chromedriver exists
         try:
             path_install = chromedriver_autoinstaller.install()
@@ -26,6 +34,8 @@ class AutomationWhatsApp():
 
         try:
             options = webdriver.ChromeOptions()
+            prefs = {'profile.managed_default_content_settings.images':2, "profile.managed_default_content_settings.images": 2, 'disk-cache-size': 4096}
+            options.add_experimental_option("prefs", prefs)
             # options.add_argument('--headless')
             options.add_argument(
                 f'user-data-dir={BASE_DIR}/seln/data/{self.uuid_user}')
@@ -78,29 +88,19 @@ class AutomationWhatsApp():
         driver.execute_script("return navigator.userAgent;")
         return driver
 
-    def send(self, type):
+    def send(self, type=1):
         driver = self._open()
 
         def text_message(driver):
             try:
-                chat_box = driver.find_elements_by_xpath(
-                    '//*[@id="main"]/footer/div[1]/div[2]/div/div[2]')
-                chat_box[0].send_keys(self.content)
-                botao_enviar = driver.find_element_by_xpath(
-                    "//span[@data-icon='send']")
-                botao_enviar.click()
-            except IndexError:
-                print('QR code deve ser lido')
-                time.sleep(5)
-                chat_box = driver.find_elements_by_xpath(
-                    '//*[@id="main"]/footer/div[1]/div[2]/div/div[2]')
-                chat_box[0].send_keys(self.content)
-                botao_enviar = driver.find_element_by_xpath(
-                    "//span[@data-icon='send']")
-                botao_enviar.click()
+                inp_xpath = '//*[@id="main"]/footer/div[1]/div[2]/div/div[2]'
+                wait = WebDriverWait(driver, 600)
+                input_box = wait.until(EC.presence_of_element_located((By.XPATH, inp_xpath)))
+                input_box.send_keys(self.content + Keys.ENTER)
+                time.sleep(0.1)
             except Exception as err:
                 print('Erro no envio da mensagem', err)
-                driver.close()
+                driver.quit()
 
         def audio_message(driver):
             try:

@@ -1,1 +1,8 @@
 {% extends '_base.html' %}
+{% block content %}
+
+    <h1>Comece a enviar suas mensagens agora</h1>
+    <a href="{% url 'seln:start' %}">
+        <button>Enviar</button>
+    </a>
+{% endblock content %}

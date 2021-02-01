@@ -17,3 +17,4 @@ class Account(models.Model):
     #mudar esse workspace
     has_workspace = models.BooleanField(default=False)
     path_workspace = models.CharField(max_length=255, null=True)
+    
